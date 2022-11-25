@@ -4,7 +4,7 @@ import numpy as np
 from sklearn import tree
 from joblib import dump, load
 from sklearn.model_selection import cross_val_score
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score, log_loss
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, log_loss
 from mongo import *
 import random
 import pandas as pd
@@ -37,18 +37,20 @@ async def training(body: TrainRequest):
 def scorer(y, p, matrix):
     if matrix=='accuracy':
         return accuracy_score(y, p)
-    elif matrix=='precision':
-        return precision_score(y, p)
-    elif matrix=='recall':
-        return recall_score(y, p)
+    elif matrix=='precision_micro':
+        return precision_score(y, p, average='micro')
+    elif matrix=='precision_macro':
+        return precision_score(y, p, average='macro')
+    elif matrix=='recall_micro':
+        return recall_score(y, p, average='micro')
+    elif matrix=='recall_macro':
+        return recall_score(y, p, average='macro')
     elif matrix=='f1_micro':
         return f1_score(y, p, average='micro')
     elif matrix=='f1_macro':
         return f1_score(y, p, average='macro')
-    elif matrix=='roc_auc':
-        return roc_auc(y, p)
-    elif matrix=='log_loss':
-        return log_loss(y, p)
+    elif matrix=='neg_log_loss':
+        return -log_loss(y, p)
 
 def data2xy(data_path, target_name, features=None):
     try:
