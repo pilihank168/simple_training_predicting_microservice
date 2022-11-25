@@ -9,6 +9,7 @@ from mongo import *
 import random
 import pandas as pd
 from pydantic_model import *
+from mini import *
 
 app = FastAPI()
 
@@ -54,7 +55,9 @@ def scorer(y, p, matrix):
 
 def data2xy(data_path, target_name, features=None):
     try:
-        df = pd.read_csv(data_path)
+        df = pd.read_csv(minio_getter(data_path))
+    except HTTPException as err:
+        raise err
     except Exception:
         raise HTTPException(status_code=406, detail="bad file")
     # check if target column exists in training stage (it's acceptable in testing)
