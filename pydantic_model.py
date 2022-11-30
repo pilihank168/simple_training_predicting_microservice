@@ -1,5 +1,5 @@
-from typing import Dict, List, Optional, Literal
-from pydantic import BaseModel, ValidationError, validator
+from typing import Dict, List, Optional, Literal, Union
+from pydantic import BaseModel, ValidationError, validator, Extra, root_validator
 
 def valid_data_path(path: str) -> str:
     if path[-4:] in ['.csv', '.txt']:
@@ -9,6 +9,29 @@ def valid_data_path(path: str) -> str:
 class DecisionTreeParam(BaseModel):
     criterion: Literal['gini', 'entropy', 'log_loss'] = 'gini'
     splitter: Literal['best', 'random'] = 'best'
+    class Config:
+        extra = Extra.forbid
+        error_msg_templates = {'value_error.extra': 'Invalid attribute name'}
+
+class Scores(BaseModel):
+    accuracy: Union[float, None]=None
+    recall_micro: Union[float, None]=None
+    recall_macro: Union[float, None]=None
+    precision_micro: Union[float, None]=None
+    precision_macro: Union[float, None]=None
+    f1_micro: Union[float, None]=None
+    f1_macro: Union[float, None]=None
+    neg_log_loss: Union[float, None]=None
+
+    @root_validator
+    def non_empty_scores(cls, v):
+        if not any(v.values()):
+            raise ValidationError('cv scores cannot be empty')
+        return v
+
+    class Config:
+        extra = Extra.forbid
+        error_msg_templates = {'value_error.extra': 'Invalid evaluation matrix'}
 
 class TrainRequest(BaseModel):
     data_path: str
@@ -26,7 +49,17 @@ class TrainRequest(BaseModel):
         return matrix
     _valid_path = validator('data_path', allow_reuse=True)(valid_data_path)
 
+class TrainResponse(BaseModel):
+    model_id: str
+    cv_scores: Scores
+
 class TestRequest(BaseModel):
+    __test__=False
     data_path: str
     model_id: str
     _valid_path = validator('data_path', allow_reuse=True)(valid_data_path)
+
+class TestResponse(BaseModel):
+    __test__=False
+    scores: Scores
+    preds: list[int]
