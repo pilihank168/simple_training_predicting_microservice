@@ -15,7 +15,7 @@ app = FastAPI()
 
 @pytest.mark.skip
 @app.get("/model") 
-async def testing(model_id: str, data_path: str) -> TestResponse:
+def testing(model_id: str, data_path: str) -> TestResponse:
     """testing.
 
     Args:
@@ -34,11 +34,11 @@ async def testing(model_id: str, data_path: str) -> TestResponse:
     model = load(f'tmp.joblib')
     preds = model.predict(x)
     scores = {mat:scorer(y, preds, mat) for mat in matrix}
-    return TestResponse(scores=scores, preds=preds)
+    return TestResponse(scores=scores, preds=preds.tolist())
 #    return {"scores": scores, "preds": preds.tolist()}
 
 @app.post("/model")
-async def training(body: TrainRequest) -> TrainResponse:
+def training(body: TrainRequest) -> TrainResponse:
     """training.
 
     Args:
@@ -49,7 +49,7 @@ async def training(body: TrainRequest) -> TrainResponse:
     """
     x, y, features = data2xy(body.data_path, body.target_name)
     model = tree.DecisionTreeClassifier(**body.dtree_param.dict())
-    cv_scores = {mat: cross_val_score(model, x, y, scoring=mat, cv=body.num_cv_fold).mean() for mat in body.eval_matrix}
+    cv_scores = {mat: np.nanmean(cross_val_score(model, x, y, scoring=mat, cv=body.num_cv_fold)) for mat in body.eval_matrix}
     model = model.fit(x, y)
     dump(model, 'tmp.joblib')
     with open('tmp.joblib', 'rb') as model_file:
@@ -107,6 +107,8 @@ def data2xy(data_path, target_name, features=None):
         else:
             y = None
     else:
+        if df[target_name].isnull().values.any():
+            raise HTTPException(status_code=406, detail="Nan value in target column")
         y = df[target_name].to_numpy()
     # randomly select some features for training
     if features==None:
@@ -117,6 +119,8 @@ def data2xy(data_path, target_name, features=None):
         for feat in features:
             if feat not in df:
                 raise HTTPException(status_code=422, detail=f"Missing Features: {feat}")
+    if df[features].isnull().values.any():
+        raise HTTPException(status_code=406, detail="Nan value in data")
     x = df[features].to_numpy()
     return x, y, features
 

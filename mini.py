@@ -11,7 +11,7 @@ def minio_getter(path):
         path: the path in minio storage, in form of '{bucket}/{filename}'
 
     Returns:
-        a file object that can be opened by function like pandas.read_csv
+        a file object that can be read by function like pandas.read_csv
     """
     try:
         bucket, obj_name = path.split('/', 1)

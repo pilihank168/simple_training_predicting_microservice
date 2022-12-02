@@ -15,7 +15,7 @@ def get_file(f_id):
     return files.get(f_id)
 
 def insert_model(score, features, model, target_name, eval_matrix, cv_fold, dtree_param):
-    f_id = put_file(client, model)
+    f_id = put_file(model)
     models = mongo_client.hello_db.models
     new_entry = {'score':score, 'features':features, 'date_time':datetime.datetime.now(), 'model':f_id,
                     'target_name': target_name, 'eval_matrix': eval_matrix, 'cv_fold': cv_fold, 'dtree_param': dtree_param}
@@ -27,7 +27,7 @@ def query_model(model_id_str):
     models = mongo_client.hello_db.models
     doc = models.find_one({'_id': ObjectId(model_id_str)})
     f_id = doc["model"]
-    return get_file(client, f_id).read(), doc["features"], doc['target_name'], doc['eval_matrix']
+    return get_file(f_id).read(), doc["features"], doc['target_name'], doc['eval_matrix']
 
 def list_all():
     models = mongo_client.hello_db.models

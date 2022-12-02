@@ -38,7 +38,7 @@ class TrainRequest(BaseModel):
     target_name: str = 'label'
     eval_matrix: list[str] = ['accuracy']
     num_cv_fold: int = 5
-    dtree_param: DecisionTreeParam
+    dtree_param: DecisionTreeParam = DecisionTreeParam()
 
     @validator('eval_matrix')
     def valid_matrix_checking(cls, matrix):
