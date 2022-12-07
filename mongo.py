@@ -38,4 +38,4 @@ def list_all():
                 'cv_fold':doc['cv_fold'], 'dtree_param':doc['dtree_param']} for doc in cursor]
     return docs
 
-mongo_client = pymongo.MongoClient('localhost', 27017)
+mongo_client = pymongo.MongoClient('mongodb', 27017)

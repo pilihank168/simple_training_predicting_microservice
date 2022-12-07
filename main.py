@@ -13,6 +13,8 @@ from mini import *
 import pytest
 app = FastAPI()
 
+minio_client = MinioClient('minio', '9000', 'Mhn9NcXrvOcfZnAI', 'uDorPlk7wb7tp7SUWx8vO288BHFuLURd')
+
 @pytest.mark.skip
 @app.get("/model") 
 def testing(model_id: str, data_path: str) -> TestResponse:
@@ -95,7 +97,7 @@ def data2xy(data_path, target_name, features=None):
         features: the columns that are used for training/testing, randomly selected when it is None (for training)
     """
     try:
-        df = pd.read_csv(minio_getter(data_path))
+        df = pd.read_csv(minio_client.get(data_path))
     except HTTPException as err:
         raise err
     except Exception:
