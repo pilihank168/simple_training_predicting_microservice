@@ -8,7 +8,6 @@ clean:
 	docker compose down
 
 test:
-	docker build -f Dockerfile.test --tag test .
-	docker compose -f docker-compose-test.yml up -d
-	
-	#docker compose down
+	docker compose exec app sh test.sh
+	#docker build -f Dockerfile.test --tag test .
+	#docker compose -f docker-compose-test.yml up -d

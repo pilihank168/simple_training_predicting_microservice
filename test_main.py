@@ -6,6 +6,8 @@ from mini import *
 def clear_db(request):
     def cleanup_db():
         mongo_client.hello_db.models.delete_many({})
+        mongo_client.hello_db.fs.files.delete_many({})
+        mongo_client.hello_db.fs.chunks.delete_many({})
     request.addfinalizer(cleanup_db)
 
 def count_db():
