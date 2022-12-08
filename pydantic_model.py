@@ -2,6 +2,14 @@ from typing import Dict, List, Optional, Literal, Union
 from pydantic import BaseModel, ValidationError, validator, Extra, root_validator
 
 def valid_data_path(path: str) -> str:
+    """valid_data_path checker, as validator used by TrainRequest and TestRequest
+
+    Args:
+        path (str): data path to be checked if it is valid
+
+    Returns:
+        str: the valid path itself. If data path is not valid, ValidationError will be raised.
+    """
     if path[-4:] in ['.csv', '.txt']:
         return path
     raise ValidationError('invalid filename extension')

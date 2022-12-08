@@ -4,15 +4,12 @@ from minio.error import S3Error
 from io import StringIO
 import pandas as pd
 
-#minio_client = Minio('127.0.0.1:9000', access_key='eqjPdZZB9ZZTOW4U', secret_key='5xMedNSLErRSia7DnUaeVBkeX6W6fLUo', secure=False)
-#minio_client = Minio('minio:9000', access_key='Mhn9NcXrvOcfZnAI', secret_key='uDorPlk7wb7tp7SUWx8vO288BHFuLURd', secure=False)
-
 class MinioClient:
     def __init__(self, ip, port, ac, sc) -> None:
         self.minio = Minio(f"{ip}:{port}", access_key=ac, secret_key=sc, secure=False)
 
     def get(self, path):
-        """get.
+        """get the uploaded file in the minio storage
 
         Args:
             path: the path in minio storage, in form of '{bucket}/{filename}'
@@ -38,5 +35,3 @@ class MinioClient:
             response.close()
             response.release_conn()
         return obj
-
-minio_client = MinioClient('minio', '9000', 'Mhn9NcXrvOcfZnAI', 'uDorPlk7wb7tp7SUWx8vO288BHFuLURd')

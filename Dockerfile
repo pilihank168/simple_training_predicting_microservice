@@ -9,5 +9,4 @@ RUN poetry config virtualenvs.create false && poetry install #--no-interaction #
 
 COPY . .
 
-#CMD ["poetry", "run", "pytest", "test_mongo.py", "-s"]
 CMD ["poetry","run", "uvicorn", "main:app", "--reload", "--host", "0.0.0.0"]

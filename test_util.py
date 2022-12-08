@@ -1,5 +1,6 @@
 import pytest
-from main import *
+from utils import *
+
 # data2xy
 def test_data2xy_valid_train():
     assert data2xy('hello-docker/train_iris.csv', 'label')
