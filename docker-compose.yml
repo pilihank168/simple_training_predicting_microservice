@@ -20,3 +20,12 @@ services:
       MINIO_ROOT_USER: ROOTNAME
       MINIO_ROOT_PASSWORD: CHANGEME123
     command: server /data --console-address ":9090"
+  orion_server:
+    image: pref
+    ports:
+      - 4200:4200
+    volumes:
+      - ~/pref/data:/data/pref
+  agent:
+    image: hello
+    command: ./wait-for-it.sh orion_server:4200 -- poetry run prefect agent start -q default

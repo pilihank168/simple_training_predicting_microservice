@@ -57,17 +57,58 @@ class TrainRequest(BaseModel):
         return matrix
     _valid_path = validator('data_path', allow_reuse=True)(valid_data_path)
 
-class TrainResponse(BaseModel):
-    model_id: str
-    cv_scores: Scores
-
 class TestRequest(BaseModel):
-    __test__=False
+    __test__= False
     data_path: str
     model_id: str
     _valid_path = validator('data_path', allow_reuse=True)(valid_data_path)
 
-class TestResponse(BaseModel):
-    __test__=False
+class TrainResult(BaseModel):
+    cv_scores: Scores
+
+class TrainResponse(BaseModel):
+    state: Literal['completed', 'failed', 'running']
+    failed_step: Literal[None, 'still pending', 'load data', 'preprocess data', 'train model', 'save model'] = None
+    running_step: Literal[None, 'still pending', 'load data', 'preprocess data', 'train model', 'save model'] = None
+    failed_message: Union[str, None] = None
+    result: Union[TrainResult, None] = None
+    
+    @root_validator
+    def state_corresponding_fields(cls, values):
+        state = values.get('state')
+        nones = [values.get(name)==None for name in ['failed_step', 'failed_message', 'running_step', 'result']]
+        if state=='completed' and (not all(nones[:3]) or nones[3]):
+            raise ValidationError('Fields does not correspond to state completed')
+        elif state=='failed' and (any(nones[:2]) or not all(nones[2:])):
+            raise ValidationError('Fields does not correspond to state failed')
+        elif state=='running' and (nones[2] or not all(nones[:2]+nones[3:])):
+            raise ValidationError('Fields does not correspond to state running')
+        return values
+
+class TestResult(BaseModel):
+    __test__= False
     scores: Scores
     preds: list[int]
+
+class TestResponse(BaseModel):
+    __test__= False
+    state: Literal['completed', 'failed', 'running']
+    failed_step: Literal[None, 'still pending', 'load model', 'load data', 'preprocess data', 'test model'] = None
+    running_step: Literal[None, 'still pending', 'load model', 'load data', 'preprocess data', 'test model'] = None
+    failed_message: Union[str, None] = None
+    result: Union[TestResult, None] = None
+    
+    @root_validator
+    def state_corresponding_fields(cls, values):
+        state = values.get('state')
+        nones = [values.get(name)==None for name in ['failed_step', 'failed_message', 'running_step', 'result']]
+        if state=='completed' and (not all(nones[:3]) or nones[3]):
+            raise ValidationError('Fields does not correspond to state completed')
+        elif state=='failed' and (any(nones[:2]) or not all(nones[2:])):
+            raise ValidationError('Fields does not correspond to state failed')
+        elif state=='running' and (nones[2] or not all(nones[:2]+nones[3:])):
+            raise ValidationError('Fields does not correspond to state running')
+        return values
+
+class FlowRun(BaseModel):
+    flow_run_id: str

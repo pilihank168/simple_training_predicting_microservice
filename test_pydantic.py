@@ -27,28 +27,46 @@ def test_training_invalid_dtree_field():
 
 # train response
 def test_training_response_valid():
-    assert TrainResponse(model_id='model_id', cv_scores=Scores(accuracy=0.9, precision_micro=0.7, recall_micro=0.85))
+    assert TrainResponse(state='completed', result=TrainResult(cv_scores=Scores(accuracy=0.9, precision_micro=0.7, recall_micro=0.85)))
 
-def test_training_empty_score():
+def test_training_response_no_score():
     with pytest.raises(ValidationError):
-        TrainResponse(model_id='model_id', cv_scores=Scores())
+        TrainResponse(state='completed')
 
-def test_training_invalid_score_value():
+def test_training_response_empty_score():
     with pytest.raises(ValidationError):
-        TrainResponse(model_id='model_id', cv_scores=Scores(accuracy='acc'))
+        TrainResponse(state='completed', result=TrainResult(cv_scores=Scores()))
 
-def test_training_invalid_score_field():
+def test_training_response_invalid_score_value():
     with pytest.raises(ValidationError):
-        TrainResponse(model_id='model_id', cv_scores=Scores(acc=0.9))
+        TrainResponse(state='completed', result=TrainResult(cv_scores=Scores(accuracy='acc')))
 
-def test_training_empty_id():
+def test_training_response_invalid_score_field():
     with pytest.raises(ValidationError):
-        TrainResponse(cv_scores=Scores(accuracy=0.9))
+        TrainResponse(state='completed', result=TrainResult(cv_scores=Scores(acc=0.9)))
+
+def test_training_response_redundant_field():
+    with pytest.raises(ValidationError):
+        TrainResponse(state='completed', failed_step='load data')
+    with pytest.raises(ValidationError):
+        TrainResponse(state='running', running_step='load data', failed_step='load data')
+    with pytest.raises(ValidationError):
+        TrainResponse(state='failed', running_step='load data', failed_step='load data')
+
+def test_training_response_missing_field():
+    with pytest.raises(ValidationError):
+        TrainResponse(state='running')
+    with pytest.raises(ValidationError):
+        TrainResponse(state='failed')
+    with pytest.raises(ValidationError):
+        TrainResponse(state='failed', failed_message='load data')
+    with pytest.raises(ValidationError):
+        TrainResponse(state='failed', failed_step='load data')
 
 # test response
 def test_testing_response_valid():
-    assert TestResponse(scores=Scores(accuracy=0.9), preds=[3])
+    assert TestResponse(state='completed', result=TestResult(scores=Scores(accuracy=0.9), preds=[3]))
 
-def test_testing_preds_wrong_type():
+def test_testing_response_preds_wrong_type():
     with pytest.raises(ValidationError):
-        TestResponse(scores=Scores(accuracy=0.9), preds=['pred'])
+        TestResponse(state='completed', result=TestResult(scores=Scores(accuracy=0.9), preds=['pred']))
